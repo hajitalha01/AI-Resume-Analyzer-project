@@ -1,41 +1,111 @@
-#  🤖  AI-Resume-Analyzer-project
-A machine learning–based Resume Analyzer that processes uploaded resumes (PDF/DOC), extracts key information using NLP, and predicts job roles, ATS score, and skill match with interactive visual dashboards using Streamlit.
+# 🧠 AI Resume Analyzer — Streamlit App
 
-## 🚀 Features
-
-- Upload Resume (PDF/DOC)
-- Extract text using NLP
-- Predict job role using ML model
-- ATS Score calculation (0-100)
-- Visual dashboards (graphs)
-- Portfolio-style output
+A full-stack, production-style Streamlit dashboard that analyses resumes using
+your trained scikit-learn model from `good_ml_project.ipynb`.
 
 ---
 
-## 🧠 Tech Stack
-
-- Python
-- Streamlit
-- Scikit-learn
-- Pandas
-- Plotly
-- NLP
-
----
-
-## 📊 Screenshots
-<img width="959" height="477" alt="image" src="https://github.com/user-attachments/assets/49c3f15d-5241-4499-a271-70d457a2423a" />
-<img width="392" height="380" alt="image" src="https://github.com/user-attachments/assets/77cb9c90-154b-4830-9b7f-d21cdb31443a" />
-<img width="392" height="380" alt="image" src="https://github.com/user-attachments/assets/77cb9c90-154b-4830-9b7f-d21cdb31443a" />
-<img width="841" height="369" alt="image" src="https://github.com/user-attachments/assets/e4ce3561-6acf-4ea7-a483-965ceb94505c" />
-<img width="959" height="427" alt="image" src="https://github.com/user-attachments/assets/ea5d6764-0174-4f0f-8537-c7b7bf11ab42" />
-<img width="842" height="317" alt="image" src="https://github.com/user-attachments/assets/6c23bcfc-6865-4d8a-8690-a659f2153ad8" />
-
-
----
-
-## ⚙️ Run Locally
+## 🚀 Quick Start
 
 ```bash
+# 1. Install dependencies
 pip install -r requirements.txt
-python -m streamlit run app.py
+
+# 2. Run the app
+streamlit run app.py
+```
+
+Then open http://localhost:8501 in your browser.
+
+---
+
+## 📁 Project Structure
+
+```
+resume_analyzer/
+├── app.py            ← Main Streamlit application
+├── requirements.txt  ← Python dependencies
+└── README.md         ← This file
+
+# Place your model files alongside app.py (or upload via sidebar):
+├── model.pkl         ← Trained sklearn model (from notebook)
+├── gender_encoder.pkl
+├── target_encoder.pkl
+└── features.pkl
+```
+
+---
+
+## 🔬 Loading Your Trained Model
+
+Your notebook (`good_ml_project.ipynb`) saves these files with `joblib.dump()`:
+
+| File | Description |
+|------|-------------|
+| `model.pkl` | Trained classifier (LogisticRegression / RandomForest / etc.) |
+| `target_encoder.pkl` | LabelEncoder for personality/role labels |
+| `gender_encoder.pkl` | LabelEncoder for gender column |
+| `features.pkl` | Feature column order list |
+
+**Two ways to load them in the app:**
+
+1. **Sidebar uploader** — drag & drop each `.pkl` at runtime (easiest)
+2. **Auto-load** — place all four files in the same folder as `app.py` and add:
+   ```python
+   # At the top of app.py, after imports:
+   if os.path.exists("model.pkl"):
+       st.session_state.model    = joblib.load("model.pkl")
+       st.session_state.le_target = joblib.load("target_encoder.pkl")
+       st.session_state.features  = joblib.load("features.pkl")
+   ```
+
+---
+
+## 📊 Pages
+
+| Page | Description |
+|------|-------------|
+| 🏠 Home | Introduction, feature highlights, quick-start buttons |
+| 📤 Upload Resume | PDF/DOCX upload **or** manual form input |
+| 📊 Dashboard | ATS gauge, skill bar/radar/pie charts, experience line chart, suggestions |
+| 👤 Portfolio | Profile card, skill progress bars, role recommendations |
+
+---
+
+## 🧠 Model Integration Notes
+
+The notebook trains on a **personality dataset** (Openness, Neuroticism,
+Conscientiousness, Agreeableness, Extraversion, Age, Gender).
+
+The app bridges resume content → personality signals → job role prediction:
+- If the `.pkl` model is loaded: passes feature vector to the model and maps
+  the output personality class to a closest job role.
+- If no model is loaded: falls back to **rule-based prediction** derived from
+  detected skill scores.
+
+You can customise the `personality_to_role` mapping in `predict_role()` to
+match your exact label set.
+
+---
+
+## ⚙️ Customisation
+
+| What | Where in app.py |
+|------|-----------------|
+| Skill taxonomy | `SKILL_CATEGORIES` dict |
+| Job role list | `JOB_ROLES` list |
+| ATS scoring weights | `compute_ats_score()` function |
+| Suggestion rules | `generate_suggestions()` function |
+| Personality → Role mapping | `predict_role()` function |
+| Colour theme | CSS block at top of file |
+
+---
+
+## 📦 Dependencies
+
+- **streamlit** — UI framework
+- **plotly** — all charts (gauge, bar, radar, pie, line)
+- **scikit-learn / joblib** — model loading
+- **pdfplumber** — PDF text extraction
+- **python-docx** — DOCX text extraction
+- **pandas / numpy** — data handling
